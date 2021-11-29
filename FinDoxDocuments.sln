@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinDoxDocumentsAPI", "WebApplication1\FinDoxDocumentsAPI.csproj", "{DDB7D22B-A3AF-4B56-975F-185DC5AD6FC1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinDoxDocumentsAPI", "FinDoxDocumentsAPI\FinDoxDocumentsAPI.csproj", "{EE64E642-29E1-4FA7-84AF-9ADB6DAC9835}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinDoxDocumentsAPIUnitTests", "FinDoxDocuementsAPIUnitTests\FinDoxDocumentsAPIUnitTests.csproj", "{3BE6FEFE-637C-4F51-8A5B-F5F3EFB36D52}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinDoxDocumentsAPIUnitTests", "FinDoxDocumentsAPIUnitTests\FinDoxDocumentsAPIUnitTests.csproj", "{350BB44D-4DB3-401F-817C-ACB7384757BB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FixDoxDocumentsAPIIntegrationTests", "FixDoxDocumentsAPIIntegrationTests\FixDoxDocumentsAPIIntegrationTests.csproj", "{709D8381-6583-4E21-97EA-79C12BE9D4FC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinDoxDocumentsAPIIntegrationTests", "FinDoxDocumentsAPIIntegrationTests\FinDoxDocumentsAPIIntegrationTests.csproj", "{041A59C0-C4C6-49AD-AD0D-F9AFF5542018}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,18 +15,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{DDB7D22B-A3AF-4B56-975F-185DC5AD6FC1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DDB7D22B-A3AF-4B56-975F-185DC5AD6FC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DDB7D22B-A3AF-4B56-975F-185DC5AD6FC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DDB7D22B-A3AF-4B56-975F-185DC5AD6FC1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3BE6FEFE-637C-4F51-8A5B-F5F3EFB36D52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3BE6FEFE-637C-4F51-8A5B-F5F3EFB36D52}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3BE6FEFE-637C-4F51-8A5B-F5F3EFB36D52}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3BE6FEFE-637C-4F51-8A5B-F5F3EFB36D52}.Release|Any CPU.Build.0 = Release|Any CPU
-		{709D8381-6583-4E21-97EA-79C12BE9D4FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{709D8381-6583-4E21-97EA-79C12BE9D4FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{709D8381-6583-4E21-97EA-79C12BE9D4FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{709D8381-6583-4E21-97EA-79C12BE9D4FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE64E642-29E1-4FA7-84AF-9ADB6DAC9835}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE64E642-29E1-4FA7-84AF-9ADB6DAC9835}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE64E642-29E1-4FA7-84AF-9ADB6DAC9835}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE64E642-29E1-4FA7-84AF-9ADB6DAC9835}.Release|Any CPU.Build.0 = Release|Any CPU
+		{350BB44D-4DB3-401F-817C-ACB7384757BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{350BB44D-4DB3-401F-817C-ACB7384757BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{350BB44D-4DB3-401F-817C-ACB7384757BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{350BB44D-4DB3-401F-817C-ACB7384757BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{041A59C0-C4C6-49AD-AD0D-F9AFF5542018}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{041A59C0-C4C6-49AD-AD0D-F9AFF5542018}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{041A59C0-C4C6-49AD-AD0D-F9AFF5542018}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{041A59C0-C4C6-49AD-AD0D-F9AFF5542018}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
