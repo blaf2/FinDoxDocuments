@@ -10,7 +10,7 @@ namespace FinDoxDocumentsAPI.Services
         Task<User> GetUserAsync(int id);
         Task<User> GetUserFromCredientialsAsync(UserInfo userInfo);
         Task<User> CreateUserAsync(CreateUserRequest request);
-        Task<User> UpdateUserAsync(int id, UpdateUserRequest request);
+        Task<User> UpdateUserAsync(UpdateUserRequest request);
         Task DeleteUserAsync(int id);
     }
 }

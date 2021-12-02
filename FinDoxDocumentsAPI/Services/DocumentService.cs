@@ -1,5 +1,6 @@
 ﻿using FinDoxDocumentsAPI.Models;
 using FinDoxDocumentsAPI.Repositories;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace FinDoxDocumentsAPI.Services
@@ -18,17 +19,32 @@ namespace FinDoxDocumentsAPI.Services
             await _documentRepository.DeleteDocumentAsync(id, user);
         }
 
-        public async Task<Document> DownloadDocumentAsync(int id, User user)
+        public async Task<DocumentContent> DownloadDocumentAsync(int id, User user)
         {
             return await _documentRepository.DownloadDocumentAsync(id, user);
         }
 
-        public async Task<Document> UpdateDocumentAsync(int id, UpdateDocumentRequest request, User user)
+        public async Task<DocumentMetadata> GetDocumentAsync(int id, User user)
         {
-            return await _documentRepository.UpdateDocumentAsync(id, request, user);
+            return await _documentRepository.GetDocumentAsync(id, user);
         }
 
-        public async Task<Document> UploadDocumenAsync(UploadDocumentRequest request)
+        public async Task<IEnumerable<DocumentMetadata>> GetUserDocumentsAsync(int userId)
+        {
+            return await _documentRepository.GetUserDocumentsAsync(userId);
+        }
+
+        public async Task<IEnumerable<DocumentMetadata>> SearchDocumentsAsync(DocumentSearchCriteria criteria, User user)
+        {
+            return await _documentRepository.SearchDocumentsAsync(criteria, user);
+        }
+
+        public async Task<DocumentMetadata> UpdateDocumentAsync(UpdateDocumentRequest request, User user)
+        {
+            return await _documentRepository.UpdateDocumentAsync(request, user);
+        }
+
+        public async Task<DocumentMetadata> UploadDocumenAsync(UploadDocumentRequest request)
         {
             return await _documentRepository.UploadDocumentAsync(request);
         }

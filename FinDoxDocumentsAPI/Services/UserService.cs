@@ -34,9 +34,9 @@ namespace FinDoxDocumentsAPI.Services
             return await _userRepository.CreateUserAsync(request);
         }
 
-        public async Task<User> UpdateUserAsync(int id, UpdateUserRequest request)
+        public async Task<User> UpdateUserAsync(UpdateUserRequest request)
         {
-            return await _userRepository.UpdateUserAsync(id, request);
+            return await _userRepository.UpdateUserAsync(request);
         }
 
         public async Task DeleteUserAsync(int id)

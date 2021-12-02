@@ -1,11 +1,8 @@
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using NLog.Web;
+using System.IO;
 
 namespace FinDoxDocumentsAPI
 {
@@ -13,6 +10,9 @@ namespace FinDoxDocumentsAPI
     {
         public static void Main(string[] args)
         {
+            var logPath = Path.Combine(Directory.GetCurrentDirectory(), "Logs");
+            NLog.GlobalDiagnosticsContext.Set("LogDirectory", logPath);
+
             CreateHostBuilder(args).Build().Run();
         }
 
@@ -21,6 +21,10 @@ namespace FinDoxDocumentsAPI
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                });
+                }).ConfigureLogging(options =>
+                {
+                    options.ClearProviders();
+                    options.SetMinimumLevel(LogLevel.Trace);
+                }).UseNLog();
     }
 }

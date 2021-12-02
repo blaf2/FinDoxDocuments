@@ -1,10 +1,9 @@
-﻿using FinDoxDocumentsAPI.Handlers;
-using FinDoxDocumentsAPI.Models;
+﻿using FinDoxDocumentsAPI.Models;
 using FinDoxDocumentsAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Security.Claims;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace FinDoxDocumentsAPI.Controllers
@@ -22,83 +21,56 @@ namespace FinDoxDocumentsAPI.Controllers
 
         [Authorize]
         [HttpGet("{id}")]
-        public async Task<ActionResult<Document>> DownloadDocument(int id)
+        public async Task<ActionResult<DocumentMetadata>> GetDocument(int id)
         {
-            var user = PermissionsHandler.GetUser(User.Identity as ClaimsIdentity);
-            if (user == null)
-                return BadRequest(PermissionsHandler.UserDoesNotExistError);
-            try
-            {
-                var result = await _documentService.DownloadDocumentAsync(id, user);
-                if (result == null)
-                    return BadRequest();
-                return Ok(result);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var result = await _documentService.GetDocumentAsync(id, HttpContext.Items["User"] as User);
+            return Ok(result);
         }
 
         [Authorize]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<DocumentMetadata>>> GetUserDocuments()
+        {
+            var user = HttpContext.Items["User"] as User;
+            return Ok(await _documentService.GetUserDocumentsAsync(user.UserId));
+        }
+
+        [Authorize]
+        [HttpGet("{id}/content")]
+        public async Task<ActionResult<DocumentContent>> DownloadDocument(int id)
+        {
+            return Ok(await _documentService.DownloadDocumentAsync(id, HttpContext.Items["User"] as User));
+        }
+
+        [Authorize]
+        [HttpPost("search")]
+        public async Task<ActionResult<IEnumerable<DocumentMetadata>>> SearchDocuments([FromBody] DocumentSearchCriteria criteria)
+        {
+            return Ok(await _documentService.SearchDocumentsAsync(criteria, HttpContext.Items["User"] as User));
+        }
+
+        [RoleAuthorize(Roles.Admin, Roles.Manager)]
         [HttpPut("{id}")]
-        public async Task<ActionResult<Document>> UpdateDocument(int id, [FromBody] UpdateDocumentRequest request)
+        public async Task<ActionResult<DocumentMetadata>> UpdateDocument(int id, [FromBody] UpdateDocumentRequest request)
         {
-            if (!PermissionsHandler.HasPermission(User.Identity as ClaimsIdentity, UserTypes.Manager))
-                return Unauthorized(PermissionsHandler.UserPermissionError);
-            var user = PermissionsHandler.GetUser(User.Identity as ClaimsIdentity);
-            if (user == null)
-                return BadRequest(PermissionsHandler.UserDoesNotExistError);
-            try
-            {
-                var result = await _documentService.UpdateDocumentAsync(id, request, user);
-                if (result == null)
-                    return BadRequest();
-                return Ok(result);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            request.DocumentId = id;
+            return Ok(await _documentService.UpdateDocumentAsync(request, HttpContext.Items["User"] as User));
         }
 
-        [Authorize]
+        [RoleAuthorize(Roles.Admin, Roles.Manager)]
         [HttpPost]
-        public async Task<ActionResult<Document>> UploadDocument([FromBody] UploadDocumentRequest request)
+        public async Task<ActionResult<DocumentMetadata>> UploadDocument([FromBody] UploadDocumentRequest request)
         {
-            if (!PermissionsHandler.HasPermission(User.Identity as ClaimsIdentity, UserTypes.Manager))
-                return Unauthorized(PermissionsHandler.UserPermissionError);
-            try
-            {
-                var result = await _documentService.UploadDocumenAsync(request);
-                if (result == null)
-                    return BadRequest();
-                return Created(new Uri($"/api/documents/{result.DocumentId}", UriKind.Relative), result);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var result = await _documentService.UploadDocumenAsync(request);
+            return Created(new Uri($"/api/documents/{result.DocumentId}", UriKind.Relative), result);
         }
 
-        [Authorize]
+        [RoleAuthorize(Roles.Admin, Roles.Manager)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteDocument(int id)
         {
-            if (!PermissionsHandler.HasPermission(User.Identity as ClaimsIdentity, UserTypes.Manager))
-                return Unauthorized(PermissionsHandler.UserPermissionError);
-            var user = PermissionsHandler.GetUser(User.Identity as ClaimsIdentity);
-            if (user == null)
-                return BadRequest(PermissionsHandler.UserDoesNotExistError);
-            try
-            {
-                await _documentService.DeleteDocumentAsync(id, user);
-                return Ok();
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            await _documentService.DeleteDocumentAsync(id, HttpContext.Items["User"] as User);
+            return Ok();
         }
     }
 }

@@ -34,9 +34,9 @@ namespace FinDoxDocumentsAPI.Services
             return await _groupRepository.GetGroupsAsync();
         }
 
-        public async Task<UserGroup> UpdateGroupAsync(int id, UpdateUserGroupRequest request)
+        public async Task<UserGroup> UpdateGroupAsync(UpdateUserGroupRequest request)
         {
-            return await _groupRepository.UpdateGroupAsync(id, request);
+            return await _groupRepository.UpdateGroupAsync(request);
         }
     }
 }

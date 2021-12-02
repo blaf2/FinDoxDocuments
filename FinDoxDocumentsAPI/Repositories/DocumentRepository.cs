@@ -1,107 +1,91 @@
 ﻿using Dapper;
 using FinDoxDocumentsAPI.Models;
-using Npgsql;
-using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace FinDoxDocumentsAPI.Repositories
 {
-    public class DocumentRepository : IDocumentRepository
+    public class DocumentRepository : Repository, IDocumentRepository
     {
-        private readonly IDbConnectionFactory _dbConnectionFactory;
-
-        public DocumentRepository(IDbConnectionFactory dbConnectionFactory)
-        {
-            _dbConnectionFactory = dbConnectionFactory;
-        }
+        public DocumentRepository(IDbConnectionFactory dbConnectionFactory) : base(dbConnectionFactory) { }
 
         public async Task DeleteDocumentAsync(int id, User user)
         {
-            using (var connection = _dbConnectionFactory.GetConnection())
+            await DatabaseCallAsync(async (connection, parameters) =>
             {
-                try
-                {
-                    var parameters = new DynamicParameters();
-                    parameters.Add("id", id);
-                    parameters.Add("user_id", user.UserId);
-                    parameters.Add("check_user", user.UserType != UserTypes.Admin);
-                    await connection.QueryAsync("delete_document", parameters, commandType: CommandType.StoredProcedure);
-                }
-                catch (NpgsqlException ex)
-                {
-                    throw new InvalidOperationException(ex.Message);
-                }
-            }
+                return await connection.QueryAsync("documents.delete_document", parameters, commandType: CommandType.StoredProcedure);
+            }, input: new Dictionary<string, object> { { "id", id }, { "user_id", user.UserId }, { "check_user", user.UserType != UserTypes.Admin } });
+
+            await DocumentDatabaseCallAsync(async (connection, parameters) =>
+            {
+                return await connection.QueryAsync("documents.delete_document", parameters, commandType: CommandType.StoredProcedure);
+            }, input: new Dictionary<string, object> { { "metadata_id", id } });
         }
 
-        public async Task<Document> DownloadDocumentAsync(int id, User user)
+        public async Task<DocumentContent> DownloadDocumentAsync(int id, User user)
         {
-            using (var connection = _dbConnectionFactory.GetConnection())
+            var metadata = await GetDocumentAsync(id, user);
+
+            return await DocumentDatabaseCallAsync(async (connection, parameters) =>
             {
-                try
-                {
-                    var parameters = new DynamicParameters();
-                    parameters.Add("id", id);
-                    parameters.Add("user_id", user.UserId);
-                    parameters.Add("check_user", user.UserType != UserTypes.Admin);
-                    var result = await connection.QueryAsync<Document>("get_document", parameters, commandType: CommandType.StoredProcedure);
-                    return result.FirstOrDefault();
-                }
-                catch (NpgsqlException ex)
-                {
-                    throw new InvalidOperationException(ex.Message);
-                }
-            }
+                var result = await connection.QueryAsync<DocumentContent>("documents.get_document", parameters, commandType: CommandType.StoredProcedure);
+                return result.FirstOrDefault();
+            }, input: new Dictionary<string, object> { { "metadata_id", metadata.DocumentId } });
         }
 
-        public async Task<Document> UpdateDocumentAsync(int id, UpdateDocumentRequest request, User user)
+        public async Task<DocumentMetadata> GetDocumentAsync(int id, User user)
         {
-            using (var connection = _dbConnectionFactory.GetConnection())
+            return await DatabaseCallAsync(async (connection, parameters) =>
             {
-                try
-                {
-                    var parameters = new DynamicParameters();
-                    parameters.Add("id", id);
-                    parameters.Add("_document_name", request.DocumentName);
-                    parameters.Add("_description", request.Description);
-                    parameters.Add("_category", request.Category);
-                    parameters.Add("users", request.Users?.Select(x => x.UserId).ToArray());
-                    parameters.Add("user_groups", request.Groups?.Select(x => x.UserGroupId).ToArray());
-                    parameters.Add("user_id", user.UserId);
-                    parameters.Add("check_user", user.UserType != UserTypes.Admin);
-                    var result = await connection.QueryAsync<Document>("update_document", parameters, commandType: CommandType.StoredProcedure);
-                    return result.FirstOrDefault();
-                }
-                catch (NpgsqlException ex)
-                {
-                    throw new InvalidOperationException(ex.Message);
-                }
-            }    
+                var result = await connection.QueryAsync<DocumentMetadata>("documents.get_document", parameters, commandType: CommandType.StoredProcedure);
+                return result.FirstOrDefault();
+            }, input: new Dictionary<string, object> { { "id", id }, { "user_id", user.UserId }, { "check_user", user.UserType != UserTypes.Admin } });
         }
 
-        public async Task<Document> UploadDocumentAsync(UploadDocumentRequest request)
+        public async Task<IEnumerable<DocumentMetadata>> GetUserDocumentsAsync(int userId)
         {
-            using (var connection = _dbConnectionFactory.GetConnection())
+            return await DatabaseCallAsync(async (connection, parameters) =>
             {
-                try
-                {
-                    var parameters = new DynamicParameters();
-                    parameters.Add("_document_name", request.DocumentName);
-                    parameters.Add("_description", request.Description);
-                    parameters.Add("_category", request.Category);
-                    parameters.Add("_document_content", request.DocumentContent);
-                    parameters.Add("users", request.Users?.Select(x => x.UserId).ToArray());
-                    parameters.Add("user_groups", request.Groups?.Select(x => x.UserGroupId).ToArray());
-                    var result = await connection.QueryAsync<Document>("new_document", parameters, commandType: CommandType.StoredProcedure);
-                    return result.FirstOrDefault();
-                }
-                catch (NpgsqlException ex)
-                {
-                    throw new InvalidOperationException(ex.Message);
-                }
-            }
+                return await connection.QueryAsync<DocumentMetadata>("documents.get_documents_by_user", parameters, commandType: CommandType.StoredProcedure);
+            }, input: new Dictionary<string, object> { { "user_id", userId }});
+        }
+
+        public async Task<IEnumerable<DocumentMetadata>> SearchDocumentsAsync(DocumentSearchCriteria criteria, User user)
+        {
+            return await DatabaseCallAsync(async (connection, parameters) =>
+            {
+                return await connection.QueryAsync<DocumentMetadata>("documents.search_documents", parameters, commandType: CommandType.StoredProcedure);
+            }, criteria, new Dictionary<string, object> { { "user_id", user.UserId }, { "check_user", user.UserType != UserTypes.Admin } });
+        }
+
+        public async Task<DocumentMetadata> UpdateDocumentAsync(UpdateDocumentRequest request, User user)
+        {
+            return await DatabaseCallAsync(async (connection, parameters) =>
+            {
+                var result = await connection.QueryAsync<DocumentMetadata>("documents.update_document", parameters, commandType: CommandType.StoredProcedure);
+                return result.FirstOrDefault();
+            }, request, new Dictionary<string, object> { { "user_id", user.UserId }, { "check_user", user.UserType != UserTypes.Admin } });
+        }
+
+        public async Task<DocumentMetadata> UploadDocumentAsync(UploadDocumentRequest request)
+        {
+            var documentMetadata = await DatabaseCallAsync(async (connection, parameters) =>
+            {
+                var result = await connection.QueryAsync<DocumentMetadata>("documents.new_document", parameters, commandType: CommandType.StoredProcedure);
+                return result.FirstOrDefault();
+            }, request);
+
+            var uploadRequest = new DocumentContent { MetadataId = documentMetadata.DocumentId, Content = request.DocumentContent };
+
+            await DocumentDatabaseCallAsync(async (connection, parameters) =>
+            {
+                var result = await connection.QueryAsync<DocumentContent>("documents.new_document", parameters, commandType: CommandType.StoredProcedure);
+                return result.FirstOrDefault();
+            }, uploadRequest);
+
+            return documentMetadata;
         }
     }
 }

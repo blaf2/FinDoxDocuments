@@ -9,7 +9,7 @@ namespace FinDoxDocumentsAPI.Repositories
         Task<IEnumerable<User>> GetUsersAsync();
         Task<User> GetUserAsync(int id);
         Task<User> CreateUserAsync(CreateUserRequest user);
-        Task<User> UpdateUserAsync(int id, UpdateUserRequest user);
+        Task<User> UpdateUserAsync(UpdateUserRequest user);
         Task DeleteUserAsync(int id);
         Task<User> GetUserFromCredientialsAsync(UserInfo userInfo);
     }

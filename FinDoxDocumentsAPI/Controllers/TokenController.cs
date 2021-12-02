@@ -39,7 +39,7 @@ namespace FinDoxDocumentsAPI.Controllers
                     new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
                     new Claim(nameof(Models.User.UserId), user.UserId.ToString()),
                     new Claim(nameof(Models.User.UserName), user.UserName),
-                    new Claim(nameof(Models.User.UserType), user.UserType.ToString()),
+                    new Claim(ClaimTypes.Role, user.UserType.ToString())
                     };
 
                     var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));

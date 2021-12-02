@@ -1,7 +1,5 @@
 ﻿using Dapper;
 using FinDoxDocumentsAPI.Models;
-using Npgsql;
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -9,162 +7,112 @@ using System.Threading.Tasks;
 
 namespace FinDoxDocumentsAPI.Repositories
 {
-    public class GroupRepository : IGroupRepository
+    public class GroupRepository : Repository, IGroupRepository
     {
-        private readonly IDbConnectionFactory _dbConnectionFactory;
-
-        public GroupRepository(IDbConnectionFactory dbConnectionFactory)
-        {
-            _dbConnectionFactory = dbConnectionFactory;
-        }
+        public GroupRepository(IDbConnectionFactory dbConnectionFactory) : base(dbConnectionFactory) { }
 
         public async Task<UserGroup> CreateGroupAsync(CreateUserGroupRequest request)
         {
-            using (var connection = _dbConnectionFactory.GetConnection())
+            return await DatabaseCallAsync(async (connection, parameters) =>
             {
-                try
-                {
-                    var parameters = new DynamicParameters();
-                    parameters.Add("_user_group_name", request.Name);
-                    parameters.Add("members", request.Members.Select(x => x.UserId).ToArray());
-                    var lookup = new Dictionary<int, UserGroup>();
-                    var results = await connection.QueryAsync<UserGroup, User, UserGroup>("new_user_group",
-                        (group, user) =>
+                var lookup = new Dictionary<int, UserGroup>();
+                var results = await connection.QueryAsync<UserGroup, User, UserGroup>("user_groups.new_user_group",
+                    (group, user) =>
+                    {
+                        if (!lookup.TryGetValue(group.UserGroupId, out UserGroup foundUserGroup))
                         {
-                            if (!lookup.TryGetValue(group.UserGroupId, out UserGroup foundUserGroup))
-                            {
-                                foundUserGroup = group;
-                                foundUserGroup.Members = new List<User>();
-                                lookup.Add(group.UserGroupId, foundUserGroup);
-                            }
-                            foundUserGroup.Members.Add(user);
-                            return foundUserGroup;
+                            foundUserGroup = group;
+                            foundUserGroup.Members = new List<User>();
+                            lookup.Add(group.UserGroupId, foundUserGroup);
                         }
-                        , parameters
-                        , splitOn: "user_id"
-                        , commandType: CommandType.StoredProcedure);
-                    return lookup.Values.FirstOrDefault();
-                }
-                catch (NpgsqlException ex)
-                {
-                    throw new InvalidOperationException(ex.Message);
-                }
-            }
+                        foundUserGroup.Members.Add(user);
+                        return foundUserGroup;
+                    }
+                    , parameters
+                    , splitOn: "user_id"
+                    , commandType: CommandType.StoredProcedure);
+                return lookup.Values.FirstOrDefault();
+            }, request);
         }
 
         public async Task DeleteGroupAsync(int id)
         {
-            using (var connection = _dbConnectionFactory.GetConnection())
+            await DatabaseCallAsync(async (connection, parameters) =>
             {
-                try
-                {
-                    var parameters = new DynamicParameters();
-                    parameters.Add("id", id);
-                    await connection.QueryAsync("delete_user_group", parameters, commandType: CommandType.StoredProcedure);
-                }
-                catch (NpgsqlException ex)
-                {
-                    throw new InvalidOperationException(ex.Message);
-                }
-            }
+                return await connection.QueryAsync("user_groups.delete_user_group", parameters, commandType: CommandType.StoredProcedure);
+            }, input: new Dictionary<string, object> { { "id", id } });
         }
 
         public async Task<UserGroup> GetGroupAsync(int id)
         {
-            using (var connection = _dbConnectionFactory.GetConnection())
+            return await DatabaseCallAsync(async (connection, parameters) =>
             {
-                try
-                {
-                    var parameters = new DynamicParameters();
-                    parameters.Add("id", id);
-                    var lookup = new Dictionary<int, UserGroup>();
-                    var results = await connection.QueryAsync<UserGroup, User, UserGroup>("get_user_group",
-                        (group, user) =>
+                var lookup = new Dictionary<int, UserGroup>();
+                var results = await connection.QueryAsync<UserGroup, User, UserGroup>("user_groups.get_user_group",
+                    (group, user) =>
+                    {
+                        if (!lookup.TryGetValue(group.UserGroupId, out UserGroup foundUserGroup))
                         {
-                            if (!lookup.TryGetValue(group.UserGroupId, out UserGroup foundUserGroup))
-                            {
-                                foundUserGroup = group;
-                                foundUserGroup.Members = new List<User>();
-                                lookup.Add(group.UserGroupId, foundUserGroup);
-                            }
-                            foundUserGroup.Members.Add(user);
-                            return foundUserGroup;
+                            foundUserGroup = group;
+                            foundUserGroup.Members = new List<User>();
+                            lookup.Add(group.UserGroupId, foundUserGroup);
                         }
-                        , parameters
-                        , splitOn: "user_id"
-                        , commandType: CommandType.StoredProcedure);
-                    return lookup.Values.FirstOrDefault();
-                }
-                catch (NpgsqlException ex)
-                {
-                    throw new InvalidOperationException(ex.Message);
-                }
-            }
+                        foundUserGroup.Members.Add(user);
+                        return foundUserGroup;
+                    }
+                    , parameters
+                    , splitOn: "user_id"
+                    , commandType: CommandType.StoredProcedure);
+                return lookup.Values.FirstOrDefault();
+            }, input: new Dictionary<string, object> { { "id", id } });
         }
 
         public async Task<IEnumerable<UserGroup>> GetGroupsAsync()
         {
-            using (var connection = _dbConnectionFactory.GetConnection())
+            return await DatabaseCallAsync(async (connection, parameters) =>
             {
-                try
-                {
-                    var lookup = new Dictionary<int, UserGroup>();
-                    var results = await connection.QueryAsync<UserGroup, User, UserGroup>("get_user_group",
-                        (group, user) =>
+                var lookup = new Dictionary<int, UserGroup>();
+                var results = await connection.QueryAsync<UserGroup, User, UserGroup>("user_groups.get_user_group",
+                    (group, user) =>
+                    {
+                        if (!lookup.TryGetValue(group.UserGroupId, out UserGroup foundUserGroup))
                         {
-                            if (!lookup.TryGetValue(group.UserGroupId, out UserGroup foundUserGroup))
-                            {
-                                foundUserGroup = group;
-                                foundUserGroup.Members = new List<User>();
-                                lookup.Add(group.UserGroupId, foundUserGroup);
-                            }
-                            foundUserGroup.Members.Add(user);
-                            return foundUserGroup;
+                            foundUserGroup = group;
+                            foundUserGroup.Members = new List<User>();
+                            lookup.Add(group.UserGroupId, foundUserGroup);
                         }
-                        , splitOn: "user_id"
-                        , commandType: CommandType.StoredProcedure);
-                    return lookup.Values;
-                }
-                catch (NpgsqlException ex)
-                {
-                    throw new InvalidOperationException(ex.Message);
-                }
-            }
+                        foundUserGroup.Members.Add(user);
+                        return foundUserGroup;
+                    }
+                    , parameters
+                    , splitOn: "user_id"
+                    , commandType: CommandType.StoredProcedure);
+                return lookup.Values;
+            });
         }
 
-        public async Task<UserGroup> UpdateGroupAsync(int id, UpdateUserGroupRequest request)
+        public async Task<UserGroup> UpdateGroupAsync(UpdateUserGroupRequest request)
         {
-            using (var connection = _dbConnectionFactory.GetConnection())
+            return await DatabaseCallAsync(async (connection, parameters) =>
             {
-                try
-                {
-                    var parameters = new DynamicParameters();
-                    parameters.Add("id", id);
-                    parameters.Add("_user_group_name", request.Name);
-                    parameters.Add("members", request.Members?.Select(x => x.UserId).ToArray());
-                    var lookup = new Dictionary<int, UserGroup>();
-                    var results = await connection.QueryAsync<UserGroup, User, UserGroup>("update_user_group",
-                        (group, user) =>
+                var lookup = new Dictionary<int, UserGroup>();
+                var results = await connection.QueryAsync<UserGroup, User, UserGroup>("user_groups.update_user_group",
+                    (group, user) =>
+                    {
+                        if (!lookup.TryGetValue(group.UserGroupId, out UserGroup foundUserGroup))
                         {
-                            if (!lookup.TryGetValue(group.UserGroupId, out UserGroup foundUserGroup))
-                            {
-                                foundUserGroup = group;
-                                foundUserGroup.Members = new List<User>();
-                                lookup.Add(group.UserGroupId, foundUserGroup);
-                            }
-                            foundUserGroup.Members.Add(user);
-                            return foundUserGroup;
+                            foundUserGroup = group;
+                            foundUserGroup.Members = new List<User>();
+                            lookup.Add(group.UserGroupId, foundUserGroup);
                         }
-                        , parameters
-                        , splitOn: "user_id"
-                        , commandType: CommandType.StoredProcedure);
-                    return lookup.Values.FirstOrDefault();
-                }
-                catch (NpgsqlException ex)
-                {
-                    throw new InvalidOperationException(ex.Message);
-                }
-            }
+                        foundUserGroup.Members.Add(user);
+                        return foundUserGroup;
+                    }
+                    , parameters
+                    , splitOn: "user_id"
+                    , commandType: CommandType.StoredProcedure);
+                return lookup.Values.FirstOrDefault();
+            }, request);
         }
     }
 }

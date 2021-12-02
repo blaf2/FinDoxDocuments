@@ -9,7 +9,7 @@ namespace FinDoxDocumentsAPI.Services
         Task<IEnumerable<UserGroup>> GetGroupsAsync();
         Task<UserGroup> GetGroupAsync(int id);
         Task<UserGroup> CreateGroupAsync(CreateUserGroupRequest request);
-        Task<UserGroup> UpdateGroupAsync(int id, UpdateUserGroupRequest request);
+        Task<UserGroup> UpdateGroupAsync(UpdateUserGroupRequest request);
         Task DeleteGroupAsync(int id);
     }
 }

@@ -1,11 +1,8 @@
-﻿using FinDoxDocumentsAPI.Handlers;
-using FinDoxDocumentsAPI.Models;
+﻿using FinDoxDocumentsAPI.Models;
 using FinDoxDocumentsAPI.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace FinDoxDocumentsAPI.Controllers
@@ -21,97 +18,42 @@ namespace FinDoxDocumentsAPI.Controllers
             _groupService = groupService;
         }
 
-        [Authorize]
+        [RoleAuthorize(Roles.Admin)]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<UserGroup>>> GetGroups()
         {
-            if (!PermissionsHandler.HasPermission(User.Identity as ClaimsIdentity, UserTypes.Admin))
-                return Unauthorized(PermissionsHandler.UserPermissionError);
-            try
-            {
-                var result = await _groupService.GetGroupsAsync();
-                if (result == null)
-                    return NoContent();
-                return Ok(result);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return Ok(await _groupService.GetGroupsAsync());
         }
 
-        [Authorize]
+        [RoleAuthorize(Roles.Admin)]
         [HttpGet("{id}")]
         public async Task<ActionResult<UserGroup>> GetGroup(int id)
         {
-            if (!PermissionsHandler.HasPermission(User.Identity as ClaimsIdentity, UserTypes.Admin))
-                return Unauthorized(PermissionsHandler.UserPermissionError);
-            try
-            {
-                var result = await _groupService.GetGroupAsync(id);
-                if (result == null)
-                    return NoContent();
-                return Ok(result);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return Ok(await _groupService.GetGroupAsync(id));
         }
 
-        [Authorize]
+        [RoleAuthorize(Roles.Admin)]
         [HttpPost]
         public async Task<ActionResult<UserGroup>> CreateGroup([FromBody] CreateUserGroupRequest request)
         {
-            if (!PermissionsHandler.HasPermission(User.Identity as ClaimsIdentity, UserTypes.Admin))
-                return Unauthorized(PermissionsHandler.UserPermissionError);
-            try
-            {
-                var result = await _groupService.CreateGroupAsync(request);
-                if (result == null)
-                    return BadRequest();
-                return Created(new Uri($"/api/groups/{result.UserGroupId}", UriKind.Relative), result);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var result = await _groupService.CreateGroupAsync(request);
+            return Created(new Uri($"/api/groups/{result.UserGroupId}", UriKind.Relative), result);
         }
 
-        [Authorize]
+        [RoleAuthorize(Roles.Admin)]
         [HttpPut("{id}")]
         public async Task<ActionResult<UserGroup>> UpdateGroup(int id, [FromBody] UpdateUserGroupRequest request)
         {
-            if (!PermissionsHandler.HasPermission(User.Identity as ClaimsIdentity, UserTypes.Admin))
-                return Unauthorized(PermissionsHandler.UserPermissionError);
-            try
-            {
-                var result = await _groupService.UpdateGroupAsync(id, request);
-                if (result == null)
-                    return BadRequest();
-                return Ok(result);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            request.Id = id;
+            return Ok(await _groupService.UpdateGroupAsync(request));
         }
 
-        [Authorize]
+        [RoleAuthorize(Roles.Admin)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteGroup(int id)
         {
-            if (!PermissionsHandler.HasPermission(User.Identity as ClaimsIdentity, UserTypes.Admin))
-                return Unauthorized(PermissionsHandler.UserPermissionError);
-            try
-            {
-                await _groupService.DeleteGroupAsync(id);
-                return Ok();
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            await _groupService.DeleteGroupAsync(id);
+            return Ok();
         }
     }
 }

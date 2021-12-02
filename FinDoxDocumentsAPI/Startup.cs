@@ -39,10 +39,11 @@ namespace FinDoxDocumentsAPI
             );
 
             var dbConnectionString = Configuration.GetConnectionString("dbConnection");
+            var dbDocumentConnectionString = Configuration.GetConnectionString("dbDocumentConnection");
 
             Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
-            services.AddSingleton<IDbConnectionFactory> ((sp) => new DbConnectionFactory(dbConnectionString));
+            services.AddSingleton<IDbConnectionFactory> ((sp) => new DbConnectionFactory(dbConnectionString, dbDocumentConnectionString));
 
             services.AddTransient<IUserRepository, UserRepository>();
             services.AddTransient<IGroupRepository, GroupRepository>();
@@ -62,16 +63,21 @@ namespace FinDoxDocumentsAPI
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseErrorMiddleware();
+
             app.UseRouting();
 
             app.UseAuthentication();
 
             app.UseAuthorization();
 
+            app.UseWhen(context => !context.Request.Path.StartsWithSegments("/api/token"), appBuilder => appBuilder.UseUserMiddleware());
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
+
         }
     }
 }
