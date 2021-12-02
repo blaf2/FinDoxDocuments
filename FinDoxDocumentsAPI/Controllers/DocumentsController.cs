@@ -23,8 +23,7 @@ namespace FinDoxDocumentsAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<DocumentMetadata>> GetDocument(int id)
         {
-            var result = await _documentService.GetDocumentAsync(id, HttpContext.Items["User"] as User);
-            return Ok(result);
+            return Ok(await _documentService.GetDocumentAsync(id, HttpContext.Items["User"] as User));
         }
 
         [Authorize]
@@ -62,7 +61,7 @@ namespace FinDoxDocumentsAPI.Controllers
         public async Task<ActionResult<DocumentMetadata>> UploadDocument([FromBody] UploadDocumentRequest request)
         {
             var result = await _documentService.UploadDocumenAsync(request);
-            return Created(new Uri($"/api/documents/{result.DocumentId}", UriKind.Relative), result);
+            return Created(new Uri($"/api/documents/{result?.DocumentId}", UriKind.Relative), result);
         }
 
         [RoleAuthorize(Roles.Admin, Roles.Manager)]

@@ -37,7 +37,7 @@ namespace FinDoxDocumentsAPI.Controllers
         public async Task<ActionResult<UserGroup>> CreateGroup([FromBody] CreateUserGroupRequest request)
         {
             var result = await _groupService.CreateGroupAsync(request);
-            return Created(new Uri($"/api/groups/{result.UserGroupId}", UriKind.Relative), result);
+            return Created(new Uri($"/api/groups/{result?.UserGroupId}", UriKind.Relative), result);
         }
 
         [RoleAuthorize(Roles.Admin)]

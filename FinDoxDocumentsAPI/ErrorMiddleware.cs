@@ -27,8 +27,13 @@ namespace FinDoxDocumentsAPI
                 var user = httpContext.Items["User"] as User;
                 var message = $"{ex.Message} - User: {user?.UserName}";
                 logger.LogError(ex, message);
-                httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                await httpContext.Response.WriteAsync(message);
+                if (ex is InvalidOperationException)
+                {
+                    httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                    await httpContext.Response.WriteAsync(message);
+                    return;
+                }
+                throw;
             }
         }
     }

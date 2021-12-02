@@ -37,7 +37,7 @@ namespace FinDoxDocumentsAPI.Controllers
         public async Task<ActionResult<User>> CreateUser([FromBody] CreateUserRequest request)
         {
             var result = await _userService.CreateUserAsync(request);
-            return Created(new Uri($"/api/users/{result.UserId}", UriKind.Relative), result);
+            return Created(new Uri($"/api/users/{result?.UserId}", UriKind.Relative), result);
         }
 
         [RoleAuthorize(Roles.Admin)]

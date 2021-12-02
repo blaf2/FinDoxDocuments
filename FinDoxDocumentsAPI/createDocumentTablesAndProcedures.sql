@@ -38,5 +38,5 @@ CREATE OR REPLACE FUNCTION documents.delete_document(metadata_id INT) RETURNS VO
 LANGUAGE sql
 AS
 $$
-	DELETE FROM documents.documents WHERE metadata_id = delete_documents.metadata_id
+	DELETE FROM documents.documents WHERE metadata_id = delete_document.metadata_id
 $$;
